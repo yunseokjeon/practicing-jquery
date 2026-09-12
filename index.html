@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jQuery 테이블 행 읽기 연습</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; padding: 0 20px; font: 16px/1.6 system-ui, sans-serif; }
+    section { margin: 36px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    th, td { border: 1px solid #bbb; padding: 8px 12px; text-align: left; }
+    button { padding: 8px 12px; cursor: pointer; }
+    pre { min-height: 40px; padding: 12px; background: #f4f4f4; white-space: pre-wrap; }
+    code { background: #f4f4f4; padding: 2px 4px; }
+  </style>
+</head>
+<body>
+  <h1>jQuery로 테이블 행 읽기</h1>
+  <p>각 표의 구조를 살펴보고 결과를 예상한 뒤 버튼을 눌러 확인하세요. 읽기 코드는 <code>table-practice.js</code>에 있습니다. 코드를 바꿔 다시 실행해 보는 것이 핵심입니다.</p>
+
+  <section>
+    <h2>1. 기본 표: 행마다 셀 텍스트 읽기</h2>
+    <table id="basic-table">
+      <thead><tr><th>이름</th><th>나이</th></tr></thead>
+      <tbody>
+        <tr><td>민지</td><td>24</td></tr>
+        <tr><td>준호</td><td>28</td></tr>
+      </tbody>
+    </table>
+    <p>연습: 각 행의 첫 번째와 두 번째 셀을 읽어 객체로 만드세요. 헤더 행은 제외해야 합니다.</p>
+    <button data-example="basic">결과 보기</button>
+    <pre id="basic-result"></pre>
+  </section>
+
+  <section>
+    <h2>2. 셀 안에 태그가 있는 표</h2>
+    <table id="rich-table">
+      <thead><tr><th>상품</th><th>수량</th><th>상태</th></tr></thead>
+      <tbody>
+        <tr><td><strong>연필</strong></td><td><input type="number" value="3" min="0"></td><td><span data-status="ready">준비</span></td></tr>
+        <tr><td><strong>공책</strong></td><td><input type="number" value="2" min="0"></td><td><span data-status="sent">발송</span></td></tr>
+      </tbody>
+    </table>
+    <p>연습: 상품명은 <code>.text()</code>, 입력값은 <code>.val()</code>, 상태 코드는 <code>.attr('data-status')</code>로 읽으세요. 수량을 바꾼 다음 다시 눌러 보세요.</p>
+    <button data-example="rich">결과 보기</button>
+    <pre id="rich-result"></pre>
+  </section>
+
+  <section>
+    <h2>3. 여러 tbody가 있는 표</h2>
+    <table id="grouped-table">
+      <thead><tr><th>항목</th><th>점수</th></tr></thead>
+      <tbody data-group="A반">
+        <tr><td>HTML</td><td>80</td></tr>
+        <tr><td>CSS</td><td>90</td></tr>
+      </tbody>
+      <tbody data-group="B반">
+        <tr><td>HTML</td><td>75</td></tr>
+      </tbody>
+      <tfoot><tr><th>전체 평균</th><td>81.7</td></tr></tfoot>
+    </table>
+    <p>연습: 각 행에서 가장 가까운 <code>tbody</code>의 그룹 이름도 읽으세요. <code>tfoot</code>은 결과에 포함되지 않아야 합니다.</p>
+    <button data-example="grouped">결과 보기</button>
+    <pre id="grouped-result"></pre>
+  </section>
+
+  <section>
+    <h2>4. 같은 셀에 텍스트와 input이 있는 표</h2>
+    <table id="mixed-cell-table">
+      <thead><tr><th>상품과 수량</th><th>단가</th></tr></thead>
+      <tbody>
+        <tr><td>연필 <input type="number" value="3" min="0" aria-label="연필 수량"> 개</td><td>500원</td></tr>
+        <tr><td>공책 <input type="number" value="2" min="0" aria-label="공책 수량"> 권</td><td>1,500원</td></tr>
+      </tbody>
+    </table>
+    <p>연습: 첫 번째 셀의 직접 텍스트 노드에서 상품명과 단위를, 같은 셀의 <code>input</code>에서 수량을 읽으세요. <code>.text()</code>는 입력값을 읽지 못합니다.</p>
+    <button data-example="mixed">결과 보기</button>
+    <pre id="mixed-result"></pre>
+  </section>
+
+  <section>
+    <h2>5. 행의 데이터 속성 읽기</h2>
+    <table id="orders-table">
+      <thead><tr><th>주문번호</th><th>금액</th></tr></thead>
+      <tbody>
+        <tr data-order-id="o-101"><td>101</td><td>1,200원</td></tr>
+        <tr data-order-id="o-102"><td>102</td><td>3,500원</td></tr>
+      </tbody>
+    </table>
+    <p>연습: 행의 <code>data-order-id</code>와 셀의 표시 금액을 읽고, 쉼표와 단위를 제거해 숫자로 바꾸세요.</p>
+    <button data-example="orders">결과 보기</button>
+    <pre id="orders-result"></pre>
+  </section>
+
+  <p>기억할 패턴: <code>$('#table-id > tbody > tr').map(function () { const $cells = $(this).children('td'); ... }).get()</code>. <code>table tr</code>처럼 넓게 선택하면 헤더·푸터 행까지 섞일 수 있습니다. <code>colspan</code>이나 <code>rowspan</code>이 있으면 셀 인덱스가 시각적 열과 다를 수 있으므로 별도의 규칙이 필요합니다.</p>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="table-practice.js"></script>
+</body>
+</html>
