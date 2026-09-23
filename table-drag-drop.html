@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jQuery로 Drag and Drop 직접 구현</title>
+  <style>
+    body { max-width: 700px; margin: 40px auto; padding: 0 20px; font: 16px/1.6 system-ui, sans-serif; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #ccc; padding: 12px; text-align: left; }
+    tbody tr { cursor: grab; background: white; }
+    .dragging { opacity: .4; }
+    .drop-before { box-shadow: inset 0 3px #1677ff; }
+    .drop-after { box-shadow: inset 0 -3px #1677ff; }
+  </style>
+</head>
+<body>
+  <nav><a href="index.html">테이블 읽기 연습</a> · <a href="table-sortable.html">jQuery UI 예제</a></nav>
+  <h1>jQuery로 Drag and Drop 직접 구현</h1>
+  <p>데스크톱에서 행을 마우스로 끌어 순서를 바꿔 보세요. 파란 선이 표시된 위치에 놓으면 행이 이동합니다.</p>
+  <table id="taskTable">
+    <thead><tr><th scope="col">ID</th><th scope="col">할 일</th></tr></thead>
+    <tbody>
+      <tr data-id="1"><td>1</td><td>HTML 공부</td></tr>
+      <tr data-id="2"><td>2</td><td>CSS 공부</td></tr>
+      <tr data-id="3"><td>3</td><td>jQuery 공부</td></tr>
+      <tr data-id="4"><td>4</td><td>프로젝트 만들기</td></tr>
+    </tbody>
+  </table>
+  <p aria-live="polite">현재 순서: <span id="order">1 → 2 → 3 → 4</span></p>
+  <p>새로고침하면 처음 순서로 돌아갑니다. 라이브러리를 불러오려면 인터넷 연결이 필요합니다.</p>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  
+  <script>
+    function showOrder() {
+      const ids = $("#taskTable tbody > tr").map(function () {
+        return $(this).attr("data-id");
+      }).get();
+      $("#order").text(ids.join(" → "));
+      return ids;
+    }
+
+    const $tbody = $("#taskTable tbody");
+    let draggedRow = null;
+
+    $tbody.children("tr").attr("draggable", "true");
+
+    function clearIndicator() {
+      $tbody.children("tr").removeClass("drop-before drop-after");
+    }
+
+    function isBefore(event, row) {
+      const rect = row.getBoundingClientRect();
+      return event.clientY < rect.top + rect.height / 2;
+    }
+
+    $tbody.on("dragstart", "> tr", function (event) {
+      draggedRow = this;
+      $(this).addClass("dragging");
+      const nativeEvent = event.originalEvent;
+      nativeEvent.dataTransfer.effectAllowed = "move";
+      nativeEvent.dataTransfer.setData("text/plain", this.dataset.id);
+    });
+
+    $tbody.on("dragover", "> tr", function (event) {
+      if (!draggedRow) return;
+      // 기본 동작을 막아야 drop 이벤트를 받을 수 있습니다.
+      event.preventDefault();
+      clearIndicator();
+      if (this === draggedRow) return;
+      const nativeEvent = event.originalEvent;
+      nativeEvent.dataTransfer.dropEffect = "move";
+      $(this).addClass(isBefore(nativeEvent, this) ? "drop-before" : "drop-after");
+    });
+
+    $tbody.on("dragleave", function (event) {
+      const nextTarget = event.originalEvent.relatedTarget;
+      if (!nextTarget || !this.contains(nextTarget)) clearIndicator();
+    });
+
+    $tbody.on("drop", "> tr", function (event) {
+      if (!draggedRow) return;
+      event.preventDefault();
+      if (this !== draggedRow) {
+        // 대상 행의 위쪽 절반이면 앞에, 아래쪽 절반이면 뒤에 삽입합니다.
+        if (isBefore(event.originalEvent, this)) {
+          $(draggedRow).insertBefore(this);
+        } else {
+          $(draggedRow).insertAfter(this);
+        }
+      }
+      clearIndicator();
+      showOrder();
+    });
+
+    $tbody.on("dragend", "> tr", function () {
+      $(this).removeClass("dragging");
+      clearIndicator();
+      draggedRow = null;
+    });
+  </script>
+</body>
+</html>
